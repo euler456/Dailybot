@@ -1,0 +1,14 @@
+# Ignore API key files
+.env
+config.json
+secrets.json
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore logs
+*.log
+logs/
