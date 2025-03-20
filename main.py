@@ -32,7 +32,7 @@ def update_notion_task():
         "Content-Type": "application/json",
         "Notion-Version": "2022-06-28"
     }
-    
+
     data = {
         "parent": {"database_id": DATABASE_ID},
         "properties": {
