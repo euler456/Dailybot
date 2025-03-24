@@ -11,7 +11,6 @@ NOTION_API_KEY = os.getenv("NOTION_API_KEY")
 DATABASE_ID = os.getenv("DATABASE_ID")
 
 def get_weekday_tasks():
-    # Define your tasks with toggles
     tasks = {
         "Monday": [
             {"task": "✅ Work on Auto Triage", "completed": False},
@@ -49,46 +48,79 @@ def get_weekday_tasks():
         ],
     }
 
-    return tasks.get(datetime.datetime.today().strftime('%A'), "No tasks for today")
+    today = datetime.datetime.today().strftime('%A')
+    return today, tasks.get(today, [])
+
+def get_all_tasks():
+    url = f"https://api.notion.com/v1/databases/{DATABASE_ID}/query"
+    headers = {
+        "Authorization": f"Bearer {NOTION_API_KEY}",
+        "Notion-Version": "2022-06-28",
+    }
+
+    response = requests.post(url, headers=headers)
+    
+    if response.status_code == 200:
+        return response.json()["results"]
+    else:
+        print("❌ Failed to fetch tasks:", response.text)
+        return []
 
 def clear_tasks_on_monday():
-    # Only clear tasks on Monday
     if datetime.datetime.today().strftime('%A') == "Monday":
-        print("Clearing weekly tasks for a fresh start!")
-        return True  # Clear tasks for the week
-    return False
+        print("🧹 Clearing all tasks for a fresh start!")
+        
+        tasks = get_all_tasks()
+        for task in tasks:
+            task_id = task["id"]  
+            archive_task(task_id)
+
+def archive_task(task_id):
+    url = f"https://api.notion.com/v1/pages/{task_id}"
+    headers = {
+        "Authorization": f"Bearer {NOTION_API_KEY}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+    }
+    data = {"archived": True}  
+
+    response = requests.patch(url, json=data, headers=headers)
+
+    if response.status_code == 200:
+        print(f"✅ Task {task_id} archived!")
+    else:
+        print(f"❌ Failed to archive task {task_id}: {response.text}")
+
 
 def update_notion_task():
-    task_content = get_weekday_tasks()
-    clear_this_week = clear_tasks_on_monday()  # Check if it's Monday and clear tasks if necessary
+    date_long = datetime.datetime.today().strftime('%m-%d, %A')  
+    day , task_list = get_weekday_tasks()
+    clear_this_week = clear_tasks_on_monday()
 
-    # URL and headers
-    url = f"https://api.notion.com/v1/pages"  # Correct API endpoint to create pages
+    url = "https://api.notion.com/v1/pages"
     headers = {
         "Authorization": f"Bearer {NOTION_API_KEY}",
         "Content-Type": "application/json",
         "Notion-Version": "2022-06-28",
     }
 
-    # Data for the tasks
-    for task in task_content:
-        task_title = task["task"]
-        task_completed = task["completed"]
-
+    for task in task_list:
         data = {
             "parent": {"database_id": DATABASE_ID},
             "properties": {
-                "Name": {"title": [{"text": {"content": task_title}}]},
-                "Completed": {"checkbox": task_completed}
+                "Name": {"title": [{"text": {"content": date_long}}]},  # Set Name to short weekday (Mon, Tue, etc.)
+                "Task": {"rich_text": [{"text": {"content": task["task"]}}]},  # Store task description
+                "Completed": {"checkbox": task["completed"]},  # Store task completion status
+                "Completion Date": {"date": {"start": datetime.datetime.today().strftime('%Y-%m-%d')}}
+
             }
         }
 
-        # Create a new task entry in the Notion database
         response = requests.post(url, json=data, headers=headers)
 
         if response.status_code == 200:
-            print("✅ Task updated in Notion!")
+            print(f"✅ Task '{task['task']}' added for {date_long}!")
         else:
-            print("❌ Failed to update Notion:", response.text)
+            print(f"❌ Failed to add task '{task['task']}' for {date_long}:", response.text)
 
 update_notion_task()
