@@ -73,6 +73,30 @@ def clear_tasks_on_monday():
         for task in tasks:
             task_id = task["id"]  
             archive_task(task_id)
+def check_repeat():
+    tasks = get_all_tasks()
+    today_str = datetime.datetime.today().strftime('%Y-%m-%d')
+    
+    no_date_tasks = True  # Flag to track if we need to add new tasks
+    
+    for task in tasks:
+        task_id = task["id"]
+        task_date = task["properties"].get("Completion Date", {}).get("date", {}).get("start")
+
+        if task_date:
+            print(f" Task {task_id} has a completion date: {task_date}")
+            if task_date != today_str:
+                print(f" Updating task from {task_date} to today...")
+                update_notion_task(task_date)
+        else:
+            print(f" Task {task_id} has no completion date. Needs to be added!")
+            no_date_tasks = False  # Indicate that tasks need to be added
+
+    # If no tasks have a valid completion date, add today's tasks
+    if no_date_tasks:
+        print(" No valid tasks found for today. Adding new tasks!")
+        update_notion_task(None)
+
 
 def archive_task(task_id):
     url = f"https://api.notion.com/v1/pages/{task_id}"
@@ -90,36 +114,39 @@ def archive_task(task_id):
     else:
         print(f" Failed to archive task {task_id}: {response.text}")
 
+def update_notion_task(task_date):
+    today_str = datetime.datetime.today().strftime('%Y-%m-%d')
 
-def update_notion_task():
-    date_long = datetime.datetime.today().strftime('%m-%d, %A')  
-    day , task_list = get_weekday_tasks()
-    clear_this_week = clear_tasks_on_monday()
+    if task_date != today_str:
+        date_long = datetime.datetime.today().strftime('%m-%d, %A')  
+        day, task_list = get_weekday_tasks()
 
-    url = "https://api.notion.com/v1/pages"
-    headers = {
-        "Authorization": f"Bearer {NOTION_API_KEY}",
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-    }
+        clear_tasks_on_monday()  # Ensure Monday tasks are cleared
 
-    for task in task_list:
-        data = {
-            "parent": {"database_id": DATABASE_ID},
-            "properties": {
-                "Name": {"title": [{"text": {"content": date_long}}]},  # Set Name to short weekday (Mon, Tue, etc.)
-                "Task": {"rich_text": [{"text": {"content": task["task"]}}]},  # Store task description
-                "Completed": {"checkbox": task["completed"]},  # Store task completion status
-                "Completion Date": {"date": {"start": datetime.datetime.today().strftime('%Y-%m-%d')}}
-
-            }
+        url = "https://api.notion.com/v1/pages"
+        headers = {
+            "Authorization": f"Bearer {NOTION_API_KEY}",
+            "Content-Type": "application/json",
+            "Notion-Version": "2022-06-28",
         }
 
-        response = requests.post(url, json=data, headers=headers)
+        for task in task_list:
+            data = {
+                "parent": {"database_id": DATABASE_ID},
+                "properties": {
+                    "Name": {"title": [{"text": {"content": date_long}}]},
+                    "Task": {"rich_text": [{"text": {"content": task["task"]}}]},
+                    "Completed": {"checkbox": task["completed"]},
+                    "Completion Date": {"date": {"start": today_str}}
+                }
+            }
 
-        if response.status_code == 200:
-            print(f"Task '{task['task']}' added for {date_long}!")
-        else:
-            print(f"Failed to add task '{task['task']}' for {date_long}:", response.text)
+            response = requests.post(url, json=data, headers=headers)
 
-update_notion_task()
+            if response.status_code == 200:
+                print(f"Task '{task['task']}' added for {date_long}!")
+            else:
+                print(f" Failed to add task '{task['task']}' for {date_long}:", response.text)
+
+    
+check_repeat()
