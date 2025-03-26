@@ -13,38 +13,37 @@ DATABASE_ID = os.getenv("DATABASE_ID")
 def get_weekday_tasks():
     tasks = {
         "Monday": [
-            {"task": "✅ Work on Auto Triage", "completed": False},
-            {"task": "📌 Learn Python scripting (1hr)", "completed": False},
-            {"task": "🎯 Write a script", "completed": False},
-            {"task": "🏋️‍♂️ Gym/Rest", "completed": False},
+            {"task": " Work on Auto Triage", "completed": False},
+            {"task": " Learn Python scripting (1hr)", "completed": False},
+            {"task": " Write a script", "completed": False},
         ],
         "Tuesday": [
-            {"task": "✅ Work on Auto", "completed": False},
-            {"task": "📌 Learn Google Cloud Basics", "completed": False},
-            {"task": "🎯 Watch GCP video (30 mins)", "completed": False},
+            {"task": " Work on Auto", "completed": False},
+            {"task": " Learn Google Cloud Basics", "completed": False},
+            {"task": " Watch GCP video (30 mins)", "completed": False},
         ],
         "Wednesday": [
-            {"task": "✅ Debug automation issues", "completed": False},
-            {"task": "📌 Learn CI/CD (Jenkins, GitHub Actions)", "completed": False},
-            {"task": "🎯 Deploy script to cloud", "completed": False},
+            {"task": " Debug automation issues", "completed": False},
+            {"task": " Learn CI/CD (Jenkins, GitHub Actions)", "completed": False},
+            {"task": " Deploy script to cloud", "completed": False},
         ],
         "Thursday": [
-            {"task": "✅ Auto tasks", "completed": False},
-            {"task": "📌 Learn Python OOP", "completed": False},
-            {"task": "🎯 Build a small automation tool", "completed": False},
+            {"task": " Auto tasks", "completed": False},
+            {"task": " Learn Python OOP", "completed": False},
+            {"task": " Build a small automation tool", "completed": False},
         ],
         "Friday": [
-            {"task": "✅ Review Auto scripts", "completed": False},
-            {"task": "📌 Learn Google Cloud Networking", "completed": False},
-            {"task": "🎯 Set up test VM", "completed": False},
+            {"task": " Review Auto scripts", "completed": False},
+            {"task": " Learn Google Cloud Networking", "completed": False},
+            {"task": " Set up test VM", "completed": False},
         ],
         "Saturday": [
-            {"task": "📌 Solve 2 LeetCode problems (1 EZ, 1 MED)", "completed": False},
-            {"task": "🎯 Improve coding skills", "completed": False},
+            {"task": " Solve 2 LeetCode problems (1 EZ, 1 MED)", "completed": False},
+            {"task": " Improve coding skills", "completed": False},
         ],
         "Sunday": [
-            {"task": "📌 Weekly review", "completed": False},
-            {"task": "🎯 Plan next week", "completed": False},
+            {"task": " Weekly review", "completed": False},
+            {"task": " Plan next week", "completed": False},
         ],
     }
 
@@ -63,12 +62,12 @@ def get_all_tasks():
     if response.status_code == 200:
         return response.json()["results"]
     else:
-        print("❌ Failed to fetch tasks:", response.text)
+        print(" Failed to fetch tasks:", response.text)
         return []
 
 def clear_tasks_on_monday():
     if datetime.datetime.today().strftime('%A') == "Monday":
-        print("🧹 Clearing all tasks for a fresh start!")
+        print(" Clearing all tasks for a fresh start!")
         
         tasks = get_all_tasks()
         for task in tasks:
@@ -87,9 +86,9 @@ def archive_task(task_id):
     response = requests.patch(url, json=data, headers=headers)
 
     if response.status_code == 200:
-        print(f"✅ Task {task_id} archived!")
+        print(f" Task {task_id} archived!")
     else:
-        print(f"❌ Failed to archive task {task_id}: {response.text}")
+        print(f" Failed to archive task {task_id}: {response.text}")
 
 
 def update_notion_task():
@@ -119,8 +118,8 @@ def update_notion_task():
         response = requests.post(url, json=data, headers=headers)
 
         if response.status_code == 200:
-            print(f"✅ Task '{task['task']}' added for {date_long}!")
+            print(f"Task '{task['task']}' added for {date_long}!")
         else:
-            print(f"❌ Failed to add task '{task['task']}' for {date_long}:", response.text)
+            print(f"Failed to add task '{task['task']}' for {date_long}:", response.text)
 
 update_notion_task()
