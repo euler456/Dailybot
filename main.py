@@ -73,6 +73,7 @@ def clear_tasks_on_monday():
         for task in tasks:
             task_id = task["id"]  
             archive_task(task_id)
+            
 def check_repeat():
     tasks = get_all_tasks()
     today_str = datetime.datetime.today().strftime('%Y-%m-%d')
@@ -148,5 +149,4 @@ def update_notion_task(task_date):
             else:
                 print(f" Failed to add task '{task['task']}' for {date_long}:", response.text)
 
-    
 check_repeat()

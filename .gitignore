@@ -1,1 +1,35 @@
+# Ignore environment variables
 .env
+
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Ignore Docker image and build files
+.docker/
+docker-compose.override.yml
+Dockerfile.dev
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Ignore virtual environment directories
+venv/
+env/
+
+# Ignore IDE/editor config files
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore Google Cloud specific files (if used)
+.boto
